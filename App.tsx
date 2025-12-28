@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Board, Cell, Position, GameStatus } from './types';
-import { GRID_SIZE, BLOCK_ROWS, BLOCK_COLS, INITIAL_IMAGE_BOARD, isValid, isBoardComplete, solveSudoku, checkMoveCompletion } from './utils/sudokuLogic';
+import { GRID_SIZE, BLOCK_ROWS, BLOCK_COLS, isValid, isBoardComplete, solveSudoku, checkMoveCompletion } from './utils/sudokuLogic';
 import { getGeminiHint, parseSudokuImage } from './services/geminiService';
 import { ResultsView } from './ResultsView';
+import { STATIC_PUZZLES } from './utils/puzzles';
 
 // --- Audio System ---
 const playSound = (type: 'select' | 'input' | 'error' | 'success' | 'win') => {
@@ -251,7 +252,8 @@ const App: React.FC = () => {
   }, []);
 
   const initGame = useCallback(() => {
-    createBoardFromValues(INITIAL_IMAGE_BOARD);
+    const randomPuzzle = STATIC_PUZZLES[Math.floor(Math.random() * STATIC_PUZZLES.length)];
+    createBoardFromValues(randomPuzzle);
   }, [createBoardFromValues]);
 
   useEffect(() => {
