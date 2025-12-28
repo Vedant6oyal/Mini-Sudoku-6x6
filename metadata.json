@@ -1,0 +1,5 @@
+{
+  "name": "Zen 6x6 Sudoku",
+  "description": "A high-performance, aesthetically pleasing 6x6 Sudoku game featuring the puzzle from your image, with intelligent hints powered by Gemini.",
+  "requestFramePermissions": []
+}

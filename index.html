@@ -1,0 +1,79 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen 6x6 Sudoku</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+        
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #f8fafc;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Celebration Animations */
+        @keyframes pop-success {
+            0% { transform: scale(1); background-color: rgba(255, 255, 255, 0.8); }
+            50% { transform: scale(1.1); background-color: #ecfdf5; box-shadow: 0 0 15px rgba(52, 211, 153, 0.5); }
+            100% { transform: scale(1); background-color: rgba(255, 255, 255, 0.6); }
+        }
+        @keyframes sparkle-fade {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5) rotate(0deg); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.2) rotate(15deg); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5) rotate(30deg); }
+        }
+        
+        .cell-success {
+            animation: pop-success 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 20;
+            border-radius: 8px;
+        }
+        .cell-success::after {
+            content: '✨';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            pointer-events: none;
+            animation: sparkle-fade 0.8s ease-out forwards;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+        
+        .glass-button {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+        }
+        .glass-button:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(99, 102, 241, 0.15);
+        }
+        .glass-button:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
