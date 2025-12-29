@@ -4,6 +4,7 @@ interface ResultsViewProps {
   time: number;
   mistakes: number;
   onNewGame: () => void;
+  averageTime: number;
 }
 
 const formatTime = (seconds: number) => {
@@ -12,12 +13,23 @@ const formatTime = (seconds: number) => {
   return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-export const ResultsView: React.FC<ResultsViewProps> = ({ time, mistakes, onNewGame }) => {
+// Standard Normal CDF approximation
+function normalCDF(x: number, mean: number, stdDev: number): number {
+  const z = (x - mean) / stdDev;
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp(-z * z / 2);
+  const prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  return z > 0 ? 1 - prob : prob;
+}
+
+export const ResultsView: React.FC<ResultsViewProps> = ({ time, mistakes, onNewGame, averageTime }) => {
   const [activeIndex, setActiveIndex] = useState(1);
   
-  // Mock statistics for display
-  const averageTime = Math.floor(time * 1.4) + 15;
-  const betterThanPercentage = Math.min(99, Math.floor(Math.random() * 20 + 75));
+  // Calculate percentile: percentage of people slower than user (userTime < othersTime)
+  // We want P(X > time), which is 1 - CDF(time)
+  const stdDev = averageTime / 4.5;
+  const percentile = 1 - normalCDF(time, averageTime, stdDev);
+  const betterThanPercentage = Math.min(99, Math.max(1, Math.floor(percentile * 100)));
 
   const cards = [
     {
@@ -35,7 +47,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ time, mistakes, onNewG
       icon: '⚡',
       label: '', // No label for main card in this design
       mainText: formatTime(time),
-      subText: `Today's avg: ${formatTime(averageTime)}`,
+      subText: `Average: ${formatTime(averageTime)}`,
       bgGradient: 'bg-[#FFF9EC]',
       borderColor: 'border-white',
       iconBg: 'bg-orange-100 text-orange-500',
@@ -44,7 +56,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ time, mistakes, onNewG
     {
       id: 'smart',
       icon: '🧠',
-      label: 'Smarter than',
+      label: 'Better than',
       mainText: `${betterThanPercentage}%`,
       subText: 'of players',
       bgGradient: 'from-purple-400/30 to-indigo-400/30',

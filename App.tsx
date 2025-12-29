@@ -167,6 +167,7 @@ const App: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [mistakes, setMistakes] = useState(0);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [targetTime, setTargetTime] = useState(0);
   
   const timerRef = useRef<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -174,26 +175,27 @@ const App: React.FC = () => {
   // Derived state for completed cells (persistent green)
   const successCells = useMemo(() => {
     const success = new Set<string>();
-    if (board.length === 0) return success;
+    if (board.length === 0 || !solution) return success;
 
     // Check Rows
     for (let r = 0; r < GRID_SIZE; r++) {
       const rowVals = board[r].map(c => c.value);
-      if (rowVals.every(v => v !== null) && new Set(rowVals).size === GRID_SIZE) {
-        if (board[r].every((c, idx) => isValid(board, r, idx, c.value!))) {
-           for (let c = 0; c < GRID_SIZE; c++) success.add(`${r}-${c}`);
-        }
+      if (rowVals.every((v, c) => v === solution[r][c])) {
+        for (let c = 0; c < GRID_SIZE; c++) success.add(`${r}-${c}`);
       }
     }
 
     // Check Cols
     for (let c = 0; c < GRID_SIZE; c++) {
-      const colVals = [];
-      for(let r=0; r < GRID_SIZE; r++) colVals.push(board[r][c].value);
-      if (colVals.every(v => v !== null) && new Set(colVals).size === GRID_SIZE) {
-         if (colVals.every((v, idx) => isValid(board, idx, c, v!))) {
-            for (let r = 0; r < GRID_SIZE; r++) success.add(`${r}-${c}`);
-         }
+      let isColCorrect = true;
+      for (let r = 0; r < GRID_SIZE; r++) {
+        if (board[r][c].value !== solution[r][c]) {
+          isColCorrect = false;
+          break;
+        }
+      }
+      if (isColCorrect) {
+        for (let r = 0; r < GRID_SIZE; r++) success.add(`${r}-${c}`);
       }
     }
 
@@ -202,31 +204,27 @@ const App: React.FC = () => {
       for (let bc = 0; bc < GRID_SIZE / BLOCK_COLS; bc++) { // 2 block cols
         const startRow = br * BLOCK_ROWS;
         const startCol = bc * BLOCK_COLS;
-        const blockVals = [];
+        let isBlockCorrect = true;
+        
         for (let i = 0; i < BLOCK_ROWS; i++) {
           for (let j = 0; j < BLOCK_COLS; j++) {
-            blockVals.push(board[startRow + i][startCol + j].value);
+            if (board[startRow + i][startCol + j].value !== solution[startRow + i][startCol + j]) {
+              isBlockCorrect = false;
+            }
           }
         }
-        if (blockVals.every(v => v !== null) && new Set(blockVals).size === GRID_SIZE) {
-           let validBlock = true;
-           for(let i=0; i<BLOCK_ROWS; i++) {
-             for(let j=0; j<BLOCK_COLS; j++) {
-               if(!isValid(board, startRow+i, startCol+j, board[startRow+i][startCol+j].value!)) validBlock = false;
-             }
-           }
-           if(validBlock) {
-             for (let i = 0; i < BLOCK_ROWS; i++) {
-                for (let j = 0; j < BLOCK_COLS; j++) {
-                  success.add(`${startRow + i}-${startCol + j}`);
-                }
-             }
-           }
+        
+        if (isBlockCorrect) {
+          for (let i = 0; i < BLOCK_ROWS; i++) {
+            for (let j = 0; j < BLOCK_COLS; j++) {
+              success.add(`${startRow + i}-${startCol + j}`);
+            }
+          }
         }
       }
     }
     return success;
-  }, [board]);
+  }, [board, solution]);
 
   const createBoardFromValues = useCallback((values: (number | null)[][]) => {
     const solvedGrid = solveSudoku(values);
@@ -253,7 +251,8 @@ const App: React.FC = () => {
 
   const initGame = useCallback(() => {
     const randomPuzzle = STATIC_PUZZLES[Math.floor(Math.random() * STATIC_PUZZLES.length)];
-    createBoardFromValues(randomPuzzle);
+    createBoardFromValues(randomPuzzle.grid);
+    setTargetTime(randomPuzzle.averageTimeSeconds);
   }, [createBoardFromValues]);
 
   useEffect(() => {
@@ -493,7 +492,8 @@ const App: React.FC = () => {
         <ResultsView 
           time={timer} 
           mistakes={mistakes} 
-          onNewGame={initGame} 
+          onNewGame={initGame}
+          averageTime={targetTime}
         />
       )}
       
